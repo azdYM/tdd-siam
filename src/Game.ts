@@ -1,17 +1,21 @@
 import { BoardInterface } from "./Board.js"
+import { PlayerInterface } from "./Player.js"
 
 export interface IBoardManager {
     execute(): Promise<BoardInterface | undefined>
 }
 
-export class Player {}
+export interface IPlayerManager {
+    execute(): Promise<PlayerInterface | undefined>
+}
 
 export class Game {
     private board: BoardInterface | null = null
-    private players: Player[] = []
+    private players: PlayerInterface[] = []
 
     constructor(
-        private boardManager?: IBoardManager
+        private boardManager?: IBoardManager,
+        private playerManager?: IPlayerManager
     ) {}
 
     getBoard() {
@@ -26,7 +30,14 @@ export class Game {
         return this.players
     }
 
-    addPlayer(player: Player) {
-        this.players?.push(player)
+    async addPlayer() {
+        let player: PlayerInterface | undefined = undefined
+
+        do {
+            player = await this.playerManager?.execute()
+            if (player) {
+                this.players.push(player)
+            }
+        } while (player !== undefined);
     }
 }
