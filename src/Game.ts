@@ -18,19 +18,24 @@ export class Game {
         private playerManager?: IPlayerManager
     ) {}
 
-    getBoard() {
-        return this.board
+    async start() {
+        await this.initBoard()
+        await this.initPlayers()
     }
 
-    async setBoard() {
-        this.board = await this.boardManager?.execute() ?? null
+    getBoard() {
+        return this.board
     }
 
     getPlayers() {
         return this.players
     }
 
-    async addPlayer() {
+    private async initBoard() {
+        this.board = await this.boardManager?.execute() ?? null
+    }
+
+    private async initPlayers() {
         let player: PlayerInterface | undefined = undefined
 
         do {

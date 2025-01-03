@@ -11,7 +11,7 @@ test('Initialize a 1D board with 5 cells', async () => {
     const input = new BoardInputTest(new Board(5))
     const game = new Game(new BoardManager(input))
 
-    await game.setBoard()
+    await game.start()
     expect(game.getBoard()?.size()).toBe(5) 
 });
 
@@ -19,7 +19,7 @@ test('Initialize a 2D board with 5x5 cells', async () => {
     const input = new BoardInputTest(new Board(5, 5))
     const game = new Game(new BoardManager(input))
 
-    await game.setBoard()
+    await game.start()
     expect(game.getBoard()?.size()).toBe(25) 
 });
 
@@ -38,7 +38,7 @@ test('Initialize the game with a single player', async () => {
         new PlayerManager(inputBoard)
     )
 
-    await game.addPlayer()
+    await game.start()
     expect(game.getPlayers()).toEqual([player]) 
 });
 
@@ -53,7 +53,7 @@ test('Initialize the game with multiple players', async () => {
         new PlayerManager(inputBoard)
     )
 
-    await game.addPlayer()
+    await game.start()
     expect(game.getPlayers()).toEqual([player, player2]) 
 });
 
