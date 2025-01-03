@@ -1,24 +1,25 @@
-export class Board {
-    constructor(private x: number, private y: number = 1) {}
-    size() {
-        return this.x * this.y
-    }
+import { BoardInterface } from "./Board.js"
+
+export interface IBoardManager {
+    execute(): Promise<BoardInterface | undefined>
 }
 
-export class Player {
-
-}
+export class Player {}
 
 export class Game {
-    private board: Board | null = null
+    private board: BoardInterface | null = null
     private players: Player[] = []
+
+    constructor(
+        private boardManager?: IBoardManager
+    ) {}
 
     getBoard() {
         return this.board
     }
 
-    setBoard(board: Board) {
-        this.board = board
+    async setBoard() {
+        this.board = await this.boardManager?.execute() ?? null
     }
 
     getPlayers() {
@@ -26,6 +27,6 @@ export class Game {
     }
 
     addPlayer(player: Player) {
-        this.players.push(player)
+        this.players?.push(player)
     }
 }
