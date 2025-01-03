@@ -5,8 +5,13 @@ export class Board {
     }
 }
 
+export class Player {
+
+}
+
 export class Game {
     private board: Board | null = null
+    private players: Player[] = []
 
     getBoard() {
         return this.board
@@ -14,5 +19,13 @@ export class Game {
 
     setBoard(board: Board) {
         this.board = board
+    }
+
+    getPlayers() {
+        return this.players
+    }
+
+    addPlayer(player: Player) {
+        this.players.push(player)
     }
 }
