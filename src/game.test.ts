@@ -1,6 +1,7 @@
 import { Game } from "./Game.js";
 import { Board, BoardInputInterface, BoardInterface, BoardManager } from "./Board.js";
-import { Player, PlayerInputInterface, PlayerInterface, PlayerManager } from "./Player.js";
+import { Player, } from "./Player.js";
+import { PlayerEntries, PlayerInputInterface, PlayerManager } from "./PlayerManager.js";
 
 test('Initialize the game without a board and return null', () => {
     const game = new Game()
@@ -29,22 +30,22 @@ test('Return an empty player list when no players are Added', () => {
 });
 
 test('Initialize the game with a single player', async () => {
-    const player = new Player()
-    const inputBoard = new MultiPlayerInputTest([player])
-    const inputPlayer = new BoardInputTest(new Board(5, 5))
+    const player = {name: "Azad"}
+    const inputPlayers = new MultiPlayerInputTest([player])
+    const inputBoard = new BoardInputTest(new Board(5, 5))
 
     const game = new Game(
-        new BoardManager(inputPlayer),
-        new PlayerManager(inputBoard)
+        new BoardManager(inputBoard),
+        new PlayerManager(inputPlayers)
     )
 
     await game.start()
-    expect(game.getPlayers()).toEqual([player]) 
+    expect(game.getPlayers().length).toEqual(1) 
 });
 
 test('Initialize the game with multiple players', async () => {
-    const player = new Player()
-    const player2 = new Player()
+    const player = {}
+    const player2 = {}
     const inputBoard = new MultiPlayerInputTest([player, player2])
     const inputPlayer = new BoardInputTest(new Board(5, 5))
 
@@ -54,7 +55,7 @@ test('Initialize the game with multiple players', async () => {
     )
 
     await game.start()
-    expect(game.getPlayers()).toEqual([player, player2]) 
+    expect(game.getPlayers().length).toEqual(2) 
 });
 
 
@@ -67,10 +68,10 @@ class BoardInputTest implements BoardInputInterface {
     }
 }
 
-class MultiPlayerInputTest implements PlayerInputInterface {
-    constructor(private players: Player[]) {}
+export class MultiPlayerInputTest implements PlayerInputInterface {
+    constructor(private dataPlayers: PlayerEntries[]) {}
 
-    async load(): Promise<PlayerInterface | undefined> {
-        return this.players.shift()
+    async load(): Promise<PlayerEntries | undefined> {
+        return this.dataPlayers.shift()
     }
 }

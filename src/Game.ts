@@ -6,7 +6,7 @@ export interface IBoardManager {
 }
 
 export interface IPlayerManager {
-    execute(): Promise<PlayerInterface | undefined>
+    execute(numberOfPiecesPerPlayer: number): Promise<PlayerInterface | undefined>
 }
 
 export class Game {
@@ -39,7 +39,7 @@ export class Game {
         let player: PlayerInterface | undefined = undefined
 
         do {
-            player = await this.playerManager?.execute()
+            player = await this.playerManager?.execute(7)
             if (player) {
                 this.players.push(player)
             }

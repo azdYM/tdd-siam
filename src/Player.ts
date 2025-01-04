@@ -1,17 +1,38 @@
 import { IPlayerManager } from "./Game.js";
 
-export class PlayerManager implements IPlayerManager {
-    constructor(private input: PlayerInputInterface) {}
+export interface PlayerInterface {}
 
-    async execute(): Promise<PlayerInterface | undefined> {
-        return await this.input.load()
+export type TeamPlayer = 'Elephant' | 'Rhinoceros'
+
+export class Player implements PlayerInterface {
+    public name?: string 
+    public team?: TeamPlayer
+    private pieces: Piece[] = []
+    
+    configure(name: string = "", team?: TeamPlayer, numberOfPiecesPerPlayer: number = 0) {
+        if (team && !['Elephant', 'Rhinoceros'].includes(team)) {
+            throw new Error(`Invalid team: ${team}. Must be "Elephan" or "Rinhoceros".`);
+        }
+
+        this.name = name;
+        this.team = team;
+
+        this.pieces = team
+            ? Array.from({ length: numberOfPiecesPerPlayer }, (_, id) => new Piece(id, team))
+            : [];
+        return this;
+    }
+
+    getPieces() {
+        return this.pieces
     }
 }
 
-export interface PlayerInputInterface {
-    load(): Promise<PlayerInterface | undefined>
+class Piece {
+    constructor(
+        public id: number,
+        public type: TeamPlayer
+    ) {}
 }
 
-export interface PlayerInterface {}
 
-export class Player {}
