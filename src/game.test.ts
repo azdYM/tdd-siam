@@ -1,6 +1,5 @@
 import { Game } from "./Game.js";
 import { Board, BoardInputInterface, BoardInterface, BoardManager } from "./Board.js";
-import { Player, } from "./Player.js";
 import { PlayerEntries, PlayerInputInterface, PlayerManager } from "./PlayerManager.js";
 
 test('Initialize the game without a board and return null', () => {
@@ -60,7 +59,7 @@ test('Initialize the game with multiple players', async () => {
 
 
 
-class BoardInputTest implements BoardInputInterface {
+export class BoardInputTest implements BoardInputInterface {
     constructor(private board: BoardInterface) {}
 
     async load(): Promise<BoardInterface | undefined> {

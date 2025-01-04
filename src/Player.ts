@@ -1,38 +1,39 @@
-import { IPlayerManager } from "./Game.js";
+import { Piece, PieceFactory } from "./Piece.js"
 
 export interface PlayerInterface {}
 
 export type TeamPlayer = 'Elephant' | 'Rhinoceros'
 
 export class Player implements PlayerInterface {
-    public name?: string 
-    public team?: TeamPlayer
+    name?: string 
+    team?: TeamPlayer
     private pieces: Piece[] = []
     
     configure(name: string = "", team?: TeamPlayer, numberOfPiecesPerPlayer: number = 0) {
-        if (team && !['Elephant', 'Rhinoceros'].includes(team)) {
-            throw new Error(`Invalid team: ${team}. Must be "Elephan" or "Rinhoceros".`);
-        }
-
+        this.validate(team)
         this.name = name;
         this.team = team;
-
-        this.pieces = team
-            ? Array.from({ length: numberOfPiecesPerPlayer }, (_, id) => new Piece(id, team))
-            : [];
+        
+        this.pieces = this.createPieces(numberOfPiecesPerPlayer)
         return this;
     }
 
     getPieces() {
         return this.pieces
     }
-}
 
-class Piece {
-    constructor(
-        public id: number,
-        public type: TeamPlayer
-    ) {}
+    private validate(team?: string) {
+        if (team && !['Elephant', 'Rhinoceros'].includes(team)) {
+            throw new Error(`Invalid team: ${team}. Must be "Elephan" or "Rinhoceros".`);
+        }
+    }
+
+    private createPieces(numberOfPieces: number) {
+        return Array.from(
+            { length: numberOfPieces }, 
+            (_, id) => PieceFactory.create(this.team!, id)
+        )
+    }
 }
 
 
