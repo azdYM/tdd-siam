@@ -8,8 +8,8 @@ test('reserves cells are empty when board should initialize without players', as
 
     const board = await boardManager.execute()
 
-    expect(board?.getReserveFrom(Piece.ELEPHANT)).toEqual([])
-    expect(board?.getReserveFrom(Piece.RHINOCEROS)).toEqual([]) 
+    expect(board?.getReserveFrom(Piece.ELEPHANT)).toBeUndefined()
+    expect(board?.getReserveFrom(Piece.RHINOCEROS)).toBeUndefined()
 });
 
 test('should place player animals in their reserve at definition of player', async () => {
@@ -19,8 +19,8 @@ test('should place player animals in their reserve at definition of player', asy
     const board = await boardManager.execute() as Board
     board?.createReservesFrom(["Elephant", "Rhinoceros"])
 
-    expect(board?.getReserveFrom(Piece.ELEPHANT).length).toEqual(5)
-    expect(board?.getReserveFrom(Piece.RHINOCEROS).length).toEqual(5) 
+    expect(board?.getReserveFrom(Piece.ELEPHANT)?.cells.length).toBe(5)
+    expect(board?.getReserveFrom(Piece.RHINOCEROS)?.cells.length).toBe(5) 
 });
 
 test('each place in reseve should be a cell', async () => {
@@ -30,8 +30,8 @@ test('each place in reseve should be a cell', async () => {
     const board = await boardManager.execute() as Board
     board?.createReservesFrom(["Elephant", "Rhinoceros"])
 
-    expect(board?.getReserveFrom('Elephant').every(reserve => reserve instanceof Cell)).toBe(true)
-    expect(board?.getReserveFrom('Rhinoceros').every(reserve => reserve instanceof Cell)).toBe(true)
+    expect(board?.getReserveFrom('Elephant')?.cells.every(reserve => reserve instanceof Cell)).toBe(true)
+    expect(board?.getReserveFrom('Rhinoceros')?.cells.every(reserve => reserve instanceof Cell)).toBe(true)
 });
 
 test('reserve cells should not be empty when setup player pieces', async () => {
@@ -48,8 +48,7 @@ test('reserve cells should not be empty when setup player pieces', async () => {
         )
     )
 
-    expect(board?.getReserveFrom('Elephant').every(reserve => reserve.isEmpty())).toBe(false)
-    expect(board?.getReserveFrom('Rhinoceros').every(reserve => reserve.isEmpty())).toBe(false)
+    expect(board?.getReserveFrom('Elephant')?.cells.every(reserve => reserve.isEmpty())).toBe(false)
 });
 
 

@@ -16,11 +16,16 @@ export interface BoardInputInterface {
 
 export interface BoardInterface {
     size(): number
-    getReserveFrom(team: TeamPlayer): Array<unknown>
+    getReserveFrom(team: TeamPlayer): ReserveArea|undefined
+}
+
+type ReserveArea = {
+    team: TeamPlayer,
+    cells: Cell[]
 }
 
 export class Board implements BoardInterface {
-    private reserves = []
+    private reserves: ReserveArea[] = []
     constructor(private x: number, private y: number = 1) {}
 
     size() {
@@ -28,17 +33,21 @@ export class Board implements BoardInterface {
     }
 
     createReservesFrom(teams: Array<TeamPlayer>) {
-        for (const element of teams) {
-            this.reserves[element] = Array.from({ length: this.x }, (_, x) => new Cell(x + 1))
+        for (const team of teams) {
+            this.reserves.push({team, cells: this.createCells()})
         }
+    }
+
+    private createCells() {
+        return Array.from({ length: this.x }, (_, x) => new Cell(x + 1))
     }
 
     addPieces(team: TeamPlayer, pices: Array<Piece>) {
         
     }
 
-    getReserveFrom(team: TeamPlayer) {
-        return this.reserves[team] ?? []
+    getReserveFrom(team: TeamPlayer): ReserveArea|undefined {
+        return this.reserves.filter(reserve => reserve.team === team)[0]
     }
 }
 
