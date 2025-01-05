@@ -9,9 +9,9 @@ export class PieceFactory {
 }
 
 export class Piece {
-    static ELEPHANT = 'Elephant'
-    static RHINOCEROS = 'Rhinoceros'
-    
+    static ELEPHANT: PieceType = 'Elephant'
+    static RHINOCEROS: PieceType = 'Rhinoceros'
+
     constructor(
         public id: number,
         public type: TeamPlayer
