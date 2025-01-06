@@ -1,6 +1,7 @@
 import { Game } from "./Game.js";
-import { Board, BoardInputInterface, BoardInterface, BoardManager } from "./Board.js";
+import { Board, BoardInterface } from "./Board.js";
 import { PlayerEntries, PlayerInputInterface, PlayerManager } from "./PlayerManager.js";
+import { BoardInputInterface, BoardManager } from "./BoardManager.js";
 
 test('Initialize the game without a board and return null', () => {
     const game = new Game()

@@ -3,6 +3,10 @@ import { Piece, PieceFactory } from "./Piece.js"
 export interface PlayerInterface {}
 
 export type TeamPlayer = 'Elephant' | 'Rhinoceros'
+export type PiecesPerTeam = {
+    team: TeamPlayer,
+    pieces: Piece[]
+}
 
 export class Player implements PlayerInterface {
     name?: string 
