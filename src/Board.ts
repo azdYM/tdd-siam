@@ -8,7 +8,7 @@ type ReserveArea = {
 }
 
 export interface BoardInterface {
-    setPiecesForTeams(piecesPerTeam: Array<PiecesPerTeam>): void
+    syncronizeTeamsPieces(piecesPerTeam: Array<PiecesPerTeam>): void
     size(): number
     getReserveFrom(team: TeamPlayer): ReserveArea|undefined
 }
@@ -17,7 +17,7 @@ export class Board implements BoardInterface {
     private reserves: ReserveArea[] = []
     constructor(private x: number, private y: number = 1) {}
 
-    setPiecesForTeams(piecesPerTeam: Array<PiecesPerTeam>) {
+    syncronizeTeamsPieces(piecesPerTeam: Array<PiecesPerTeam>) {
         for (const {team, pieces} of piecesPerTeam) {
             this.reserves.push({team, cells: this.createCells()})
             this.addPiecesInReserveTeam(team, pieces)

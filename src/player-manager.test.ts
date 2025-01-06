@@ -41,7 +41,7 @@ async function loadSinglePlayer(entries: PlayerEntries, numberOfPiecesPerPlayer:
     return await manager.execute(numberOfPiecesPerPlayer) as Player
 }
 
-async function createPlayerManager(entries: PlayerEntries[]) {
+export async function createPlayerManager(entries: PlayerEntries[]) {
     const input = new MultiPlayerInputTest(entries)
     return new PlayerManager(input)
 }

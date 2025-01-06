@@ -2,6 +2,7 @@ import { Game } from "./Game.js";
 import { Board, BoardInterface } from "./Board.js";
 import { PlayerEntries, PlayerInputInterface, PlayerManager } from "./PlayerManager.js";
 import { BoardInputInterface, BoardManager } from "./BoardManager.js";
+import { createPlayerManager } from "./player-manager.test.js";
 
 test('Initialize the game without a board and return null', () => {
     const game = new Game()
@@ -30,7 +31,7 @@ test('Return an empty player list when no players are Added', () => {
 });
 
 test('Initialize the game with a single player', async () => {
-    const player = {name: "Azad"}
+    const player: PlayerEntries = {name: "Azad", team: 'Elephant'}
     const inputPlayers = new MultiPlayerInputTest([player])
     const inputBoard = new BoardInputTest(new Board(5, 5))
 
@@ -40,7 +41,7 @@ test('Initialize the game with a single player', async () => {
     )
 
     await game.start()
-    expect(game.getPlayers().length).toEqual(1) 
+    expect(game.getPlayers().length).toBe(1) 
 });
 
 test('Initialize the game with multiple players', async () => {
@@ -55,10 +56,26 @@ test('Initialize the game with multiple players', async () => {
     )
 
     await game.start()
-    expect(game.getPlayers().length).toEqual(2) 
+    expect(game.getPlayers().length).toBe(2) 
 });
 
+test('Synchronise players pieces in the board', async () => {
+    const player: PlayerEntries = {name: "azad", team: 'Elephant'}
+    const player2: PlayerEntries = {name: "mina", team: 'Rhinoceros'}
+    const playersManager = await createPlayerManager([player, player2])
+    const inputPlayer = new BoardInputTest(new Board(5, 5))
 
+    const game = new Game(
+        new BoardManager(inputPlayer),
+        playersManager
+    )
+
+    await game.start()
+    
+    expect(game.getBoard()?.getReserveFrom('Elephant')?.cells.every(cell => cell.isEmpty())).toBe(false)
+    expect(game.getBoard()?.getReserveFrom('Rhinoceros')?.cells.every(cell => cell.isEmpty())).toBe(false)
+    expect(game.status()).toBe("Les pièces des deux équipes ont été syncronisé au plateau du jeu") 
+});
 
 export class BoardInputTest implements BoardInputInterface {
     constructor(private board: BoardInterface) {}

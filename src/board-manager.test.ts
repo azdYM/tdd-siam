@@ -18,7 +18,7 @@ test('should create reserves with correct number of cells when team players are 
     const boardManager = new BoardManager(boardInput)
 
     const board = await boardManager.execute() as Board
-    board.setPiecesForTeams([
+    board.syncronizeTeamsPieces([
         {team: "Elephant", pieces: []},
         {team: "Rhinoceros", pieces: []}
     ])
@@ -32,7 +32,7 @@ test('reserve cells should all be instances of the Cell class', async () => {
     const boardManager = new BoardManager(boardInput)
 
     const board = await boardManager.execute() as Board
-    board.setPiecesForTeams([
+    board.syncronizeTeamsPieces([
         {team: "Elephant", pieces: []},
         {team: "Rhinoceros", pieces: []}
     ])
@@ -45,7 +45,7 @@ test('reserve cells should be empty when no player pieces are added', async () =
     const boardManager = new BoardManager(boardInput)
 
     const board = await boardManager.execute() as Board
-    board.setPiecesForTeams([
+    board.syncronizeTeamsPieces([
         {team: "Elephant", pieces: []},
         {team: "Rhinoceros", pieces: []}
     ])
@@ -60,7 +60,7 @@ test('reserve cells should contain pieces after adding player pieces', async () 
     const boardManager = new BoardManager(boardInput)
 
     const board = await boardManager.execute() as Board
-    board.setPiecesForTeams(loadPiecesPerTeam())
+    board.syncronizeTeamsPieces(loadPiecesPerTeam())
 
     expect(board?.getReserveFrom('Elephant')?.cells.every(reserve => reserve.isEmpty())).toBe(false)
 });
@@ -71,7 +71,7 @@ test('should place pieces in the correct cells with in a reserve', async () => {
     const piecesPerTeam = loadPiecesPerTeam()
 
     const board = await boardManager.execute() as Board;
-    board.setPiecesForTeams(loadPiecesPerTeam())
+    board.syncronizeTeamsPieces(loadPiecesPerTeam())
 
 
     expect(board?.getReserveFrom(Piece.ELEPHANT)?.cells[0].getPiece()).toStrictEqual(piecesPerTeam[0].pieces[0]);
