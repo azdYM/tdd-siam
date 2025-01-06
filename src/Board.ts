@@ -42,21 +42,31 @@ export class Board implements BoardInterface {
         return Array.from({ length: this.x }, (_, x) => new Cell(x + 1))
     }
 
-    addPieces(team: TeamPlayer, pices: Array<Piece>) {
-        
+    addPiecesInReserveTeam(team: TeamPlayer, pieces: Array<Piece>) {
+        const cells = this.getReserveFrom(team)?.cells
+        cells?.forEach((cell, key) => cell.setPiece(pieces[key]))
     }
 
     getReserveFrom(team: TeamPlayer): ReserveArea|undefined {
-        return this.reserves.filter(reserve => reserve.team === team)[0]
+        return this.reserves.find(reserve => reserve.team === team)
     }
 }
 
 export class Cell {
+    private piece: Piece|null = null
     constructor(
-        public id: number
+        public id: number,
     ) {}
 
+    setPiece(piece: Piece) {
+        this.piece = piece
+    }
+
+    getPiece() {
+        return this.piece
+    }
+
     isEmpty() {
-        return false
+        return this.piece === null
     }
 }
