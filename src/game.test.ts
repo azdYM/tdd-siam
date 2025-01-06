@@ -3,8 +3,9 @@ import { Board, BoardInterface } from "./Board.js";
 import { PlayerEntries, PlayerInputInterface, PlayerManager } from "./PlayerManager.js";
 import { BoardInputInterface, BoardManager } from "./BoardManager.js";
 import { createPlayerManager } from "./player-manager.test.js";
+import { Piece } from "./Piece.js";
 
-test('Initialize the game without a board and return null', () => {
+test('Initialize the game without a board and return Null', () => {
     const game = new Game()
     expect(game.getBoard()).toBeNull()
 });
@@ -59,7 +60,7 @@ test('Initialize the game with multiple players', async () => {
     expect(game.getPlayers().length).toBe(2) 
 });
 
-test('Synchronise players pieces in the board', async () => {
+test('Synchronises player pieces into their respective team reserves at game start', async () => {
     const player: PlayerEntries = {name: "azad", team: 'Elephant'}
     const player2: PlayerEntries = {name: "mina", team: 'Rhinoceros'}
     const playersManager = await createPlayerManager([player, player2])
@@ -71,11 +72,40 @@ test('Synchronise players pieces in the board', async () => {
     )
 
     await game.start()
+    const elephantReserve = game.getBoard()?.getReserveFor('Elephant')
+    const rhinoReserve = game.getBoard()?.getReserveFor('Rhinoceros')
+
     
-    expect(game.getBoard()?.getReserveFrom('Elephant')?.cells.every(cell => cell.isEmpty())).toBe(false)
-    expect(game.getBoard()?.getReserveFrom('Rhinoceros')?.cells.every(cell => cell.isEmpty())).toBe(false)
-    expect(game.status()).toBe("Les pièces des deux équipes ont été syncronisé au plateau du jeu") 
+    expect(elephantReserve?.cells.every(cell => cell.isEmpty())).toBe(false)
+    expect(rhinoReserve?.cells.every(cell => cell.isEmpty())).toBe(false)
+
+    // Vérifie que les bonnes pièces ont été synchronisées
+    expect(elephantReserve?.cells.every(cell => cell.getPiece()?.type === Piece.ELEPHANT)).toBe(true)
+    expect(rhinoReserve?.cells.every(cell => cell.getPiece()?.type === Piece.RHINOCEROS)).toBe(true)
+
+    // Vérifie que le nombre de pièces correspond à la taille de la réserve
+    expect(elephantReserve?.cells.length).toBe(5)
+    expect(rhinoReserve?.cells.length).toBe(5)
+
+    expect(game.messages()).toBe("Les pièces des deux équipes ont été syncronisé au plateau du jeu") 
 });
+
+test('syncronise rocket pieces in the middle board', async () => {
+    const inputPlayer = new BoardInputTest(new Board(5, 5))
+    const boardManager = new BoardManager(inputPlayer)
+
+    const game = new Game(boardManager, await createPlayerManager([]))
+    await game.start()
+
+    expect(game.status()).toEqual([
+        'E E E E E',
+        'E E E E E',
+        'E O O O E',
+        'E E E E E',
+        'E E E E E',
+    ])
+});
+
 
 export class BoardInputTest implements BoardInputInterface {
     constructor(private board: BoardInterface) {}

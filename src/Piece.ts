@@ -1,6 +1,6 @@
 import { TeamPlayer } from "./Player.js";
 
-export type PieceType = TeamPlayer
+export type PieceType = TeamPlayer | 'Rock'
 
 export class PieceFactory {
     static create(type: PieceType, id: number): Piece {
@@ -9,11 +9,12 @@ export class PieceFactory {
 }
 
 export class Piece {
-    static ELEPHANT: PieceType = 'Elephant'
-    static RHINOCEROS: PieceType = 'Rhinoceros'
+    static ELEPHANT: TeamPlayer = 'Elephant'
+    static RHINOCEROS: TeamPlayer = 'Rhinoceros'
+    static ROCK: PieceType = 'Rock'
 
     constructor(
         public id: number,
-        public type: TeamPlayer
+        public type: PieceType
     ) {}
 }

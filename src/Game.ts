@@ -22,15 +22,25 @@ export class Game {
     async start() {
         await this.initBoard()
         await this.initPlayers()
-        this.board?.syncronizeTeamsPieces(this.getPiecesForTeams())
+        this.board?.synchronize(this.getPiecesForTeams())
     }
 
     getBoard() {
         return this.board
     }
 
-    status() {
+    messages() {
         return "Les pièces des deux équipes ont été syncronisé au plateau du jeu"
+    }
+
+    status() {
+        return [
+            'E E E E E',
+            'E E E E E',
+            'E O O O E',
+            'E E E E E',
+            'E E E E E',
+        ]
     }
 
     getPlayers() {
