@@ -1,4 +1,4 @@
-import { MultiPlayerInputTest } from "./game.test.js";
+import { MultiPlayerConfigInputTest } from "./game.test.js";
 import { Player, TeamPlayer } from "./Player.js";
 import { PlayerEntries, PlayerManager } from "./PlayerManager.js";
 
@@ -42,6 +42,6 @@ async function loadSinglePlayer(entries: PlayerEntries, numberOfPiecesPerPlayer:
 }
 
 export async function createPlayerManager(entries: PlayerEntries[]) {
-    const input = new MultiPlayerInputTest(entries)
+    const input = new MultiPlayerConfigInputTest(entries)
     return new PlayerManager(input)
 }

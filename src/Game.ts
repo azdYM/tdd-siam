@@ -1,7 +1,10 @@
 import { BoardInterface } from "./Board.js"
-import { Cell } from "./Cell.js"
-import { Piece } from "./Piece.js"
+import { BoardInputInterface, BoardManager } from "./BoardManager.js"
+import { DisplayLog } from "./DisplayLog.js"
+import { GameRules } from "./GameRules.js"
+import { GameSession, PlayerGameInputsInterface } from "./GameSession.js"
 import { PiecesPerTeam, PlayerInterface } from "./Player.js"
+import { PlayerConfigInputInterface, PlayerManager } from "./PlayerManager.js"
 
 export interface IBoardManager {
     execute(): Promise<BoardInterface | undefined>
@@ -9,6 +12,17 @@ export interface IBoardManager {
 
 export interface IPlayerManager {
     execute(numberOfPiecesPerPlayer: number): Promise<PlayerInterface | undefined>
+}
+
+export interface SessionInterface {
+    start(board: BoardInterface, players: PlayerInterface[]): Promise<void>
+    getPlayers(): PlayerInterface[]
+    getBoard(): BoardInterface
+    status(): Array<string>
+}
+
+export interface DisplayInterface {
+    boardSynchronized(players: PlayerInterface[], board: BoardInterface): void
 }
 
 export class Game {
@@ -19,45 +33,16 @@ export class Game {
     constructor(
         private boardManager?: IBoardManager,
         private playerManager?: IPlayerManager,
+        private session?: SessionInterface,
+        private display?: DisplayInterface
     ) {}
 
     async start() {
         await this.initBoard()
         await this.initPlayers()
-        this.board?.synchronize(this.getPiecesForTeams())
-    }
-
-    getBoard() {
-        return this.board
-    }
-
-    messages() {
-        return "Les pièces des deux équipes ont été syncronisé au plateau du jeu"
-    }
-
-    status() {
-        return [
-            'E E E E E',
-            'E E E E E',
-            'E O O O E',
-            'E E E E E',
-            'E E E E E',
-        ]
-    }
-
-    getPlayers() {
-        return this.players
-    }
-
-    getMovesOptions(piece: Piece, cell: Cell, turn: number) {
-        const baseCellsId = [1, 2, 4, 5, 6, 10, 11, 15, 16, 20, 21, 22, 24, 25]
-        const additionalCellsId = [3, 23]
-        
-        const availableCellsId = turn > 2 
-            ? [...baseCellsId, ...additionalCellsId] 
-            : baseCellsId
-
-        return this.board?.getPlayArea().filter(cell => availableCellsId.includes(cell?.id))
+        await this.board?.synchronize(this.getPiecesForTeams())
+        this.display?.boardSynchronized(this.players, this.board!)
+        this.session?.start(this.board!, this.players)
     }
 
     private async initBoard() {
@@ -81,4 +66,31 @@ export class Game {
             pieces: player.getPieces()
         }))
     }
+}
+
+export async function startGame(
+    boardInput?: BoardInputInterface, 
+    playerConfigInput?: PlayerConfigInputInterface, 
+    playerGameInput?: PlayerGameInputsInterface
+) {
+    
+    let playersManager: IPlayerManager | undefined
+    let boardManager: IBoardManager | undefined
+
+    if (boardInput) {
+        boardManager = new BoardManager(boardInput)
+    }
+
+    if (playerConfigInput) {
+        playersManager = new PlayerManager(playerConfigInput)
+    }
+
+    const log = new DisplayLog()
+    const gameRules = new GameRules
+    const session = new GameSession(gameRules, playerGameInput)
+
+    const game = new Game(boardManager, playersManager, session, log)
+    await game.start()
+
+    return { session, rules: gameRules, log  }
 }

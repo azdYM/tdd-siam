@@ -7,7 +7,7 @@ export type PlayerEntries = {
 }
 
 export class PlayerManager implements IPlayerManager {
-    constructor(private input: PlayerInputInterface) {}
+    constructor(private input: PlayerConfigInputInterface) {}
 
     async execute(numberOfPiecesPerPlayer: number): Promise<PlayerInterface | undefined> {
         const data = await this.input.load()
@@ -17,7 +17,7 @@ export class PlayerManager implements IPlayerManager {
     }
 }
 
-export interface PlayerInputInterface {
+export interface PlayerConfigInputInterface {
     load(): Promise<PlayerEntries | undefined>
 }
 

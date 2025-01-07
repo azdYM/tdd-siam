@@ -9,7 +9,7 @@ type ReserveArea = {
 
 export interface BoardInterface {
     size(): number
-    synchronize(piecesPerTeam: Array<PiecesPerTeam>): void
+    synchronize(piecesPerTeam: Array<PiecesPerTeam>): Promise<void>
     getReserveFor(team: TeamPlayer): ReserveArea|undefined
     getPlayArea(): Cell[]
 }
@@ -22,7 +22,7 @@ export class Board implements BoardInterface {
         this.initPlayArea()
     }
 
-    synchronize(piecesPerTeam: Array<PiecesPerTeam>) {
+    async synchronize(piecesPerTeam: Array<PiecesPerTeam>) {
         this.initReservesTeams(piecesPerTeam)
         this.initRocketPiecesInPlayArea()
     }
