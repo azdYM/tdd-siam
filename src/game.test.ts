@@ -61,13 +61,10 @@ test('Initialize the game with multiple players', async () => {
 });
 
 test('Synchronises player pieces into their respective team reserves at game start', async () => {
-    const player: PlayerEntries = {name: "azad", team: 'Elephant'}
-    const player2: PlayerEntries = {name: "mina", team: 'Rhinoceros'}
-    const playersManager = await createPlayerManager([player, player2])
-    const inputPlayer = new BoardInputTest(new Board(5, 5))
-
+    const players = getPlayersEntry()
+    const playersManager = await createPlayerManager(players)
     const game = new Game(
-        new BoardManager(inputPlayer),
+        new BoardManager(new BoardInputTest(new Board(5, 5))),
         playersManager
     )
 
@@ -90,9 +87,9 @@ test('Synchronises player pieces into their respective team reserves at game sta
     expect(game.messages()).toBe("Les pièces des deux équipes ont été syncronisé au plateau du jeu") 
 });
 
-test('syncronise rocket pieces in the middle board', async () => {
-    const inputPlayer = new BoardInputTest(new Board(5, 5))
-    const boardManager = new BoardManager(inputPlayer)
+test('Syncronise rock pieces in the middle board', async () => {
+    const inputBoard = new BoardInputTest(new Board(5, 5))
+    const boardManager = new BoardManager(inputBoard)
 
     const game = new Game(boardManager, await createPlayerManager([]))
     await game.start()
@@ -106,6 +103,56 @@ test('syncronise rocket pieces in the middle board', async () => {
     ])
 });
 
+test('Request possible move options during the first two turns from reserve', async () => {
+    const players = getPlayersEntry()
+    const playersManager = await createPlayerManager(players)
+    const game = new Game(
+        new BoardManager(new BoardInputTest(new Board(5, 5))),
+        playersManager
+    )
+
+    await game.start()
+
+    const player = game.getPlayers()[0]
+    const piece = player?.getPieces()[0]
+    const cell = game.getBoard()?.getReserveFor(player?.getTeam())?.cells[0]!
+
+    const expectedCellsId = [1, 2, 4, 5, 6, 10, 11, 15, 16, 20, 21, 22, 24, 25]
+    const moves = game.getMovesOptions(piece, cell, 1);
+
+    expect(moves?.length).toBe(expectedCellsId.length)
+    expect(moves?.every(cell => expectedCellsId.includes(cell.id))).toBe(true)
+    expect(cell?.getPiece()).toBe(piece)
+});
+
+test('Request set of possible move options after the second turn from reserve', async () => {
+    const players = getPlayersEntry()
+    const playersManager = await createPlayerManager(players)
+    const game = new Game(
+        new BoardManager(new BoardInputTest(new Board(5, 5))),
+        playersManager
+    )
+    
+    await game.start()
+
+    const player = game.getPlayers()[0]
+    const piece = player?.getPieces()[0]
+    const cell = game.getBoard()?.getReserveFor(player?.getTeam())?.cells[0]!
+
+    const expectedCellsId = [1, 2, 4, 5, 6, 10, 11, 15, 16, 20, 21, 22, 24, 25, 3, 23]
+    const moves = game.getMovesOptions(piece, cell, 3);
+
+    expect(moves?.length).toBe(expectedCellsId.length)
+    expect(moves?.every(cell => expectedCellsId.includes(cell.id))).toBe(true)
+    expect(cell?.getPiece()).toBe(piece)
+});
+
+function getPlayersEntry() {
+    const player: PlayerEntries = {name: "azad", team: 'Elephant'}
+    const player2: PlayerEntries = {name: "mina", team: 'Rhinoceros'}
+
+    return [player, player2]
+}
 
 export class BoardInputTest implements BoardInputInterface {
     constructor(private board: BoardInterface) {}
@@ -122,3 +169,4 @@ export class MultiPlayerInputTest implements PlayerInputInterface {
         return this.dataPlayers.shift()
     }
 }
+
