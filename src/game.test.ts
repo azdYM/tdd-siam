@@ -154,10 +154,10 @@ test('Move animal piece from reserve cell in play area empty cell', async () => 
     )
 
     const status = await session.status()
-    const pieceLastCell = session.getBoard()
+    const lastPieceCell = session.getBoard()
         .getReserveFor('Elephant')?.cells.find(cell => cell.id === 1)
     
-    expect(pieceLastCell?.isEmpty()).toBe(true)
+    expect(lastPieceCell?.isEmpty()).toBe(true)
     expect(status).toEqual([
         'EE E1 EE EE EE',
         'EE EE EE EE EE',

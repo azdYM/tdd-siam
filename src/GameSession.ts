@@ -12,7 +12,8 @@ export interface GameRulesInterface {
 export class GameSession implements SessionInterface {
     private board: BoardInterface
     private players: PlayerInterface[]
-    private isPlayerActionComplete: boolean = true 
+    private actionCompletePromise: Promise<void> = Promise.resolve()
+    private actionCompleteResolver: (() => void) | null = null
 
     constructor(
         private gameRules: GameRulesInterface, 
@@ -27,10 +28,28 @@ export class GameSession implements SessionInterface {
     }
 
     private async play(player: PlayerInterface, turn: number): Promise<void> {
-        this.isPlayerActionComplete = false
+        this.actionCompletePromise = new Promise(resolve => {
+            this.actionCompleteResolver = resolve
+        })
+
         const movesOptions = await this.previewMoves(player, turn)
         await this.move(player)
-        this.isPlayerActionComplete = true
+        
+        this.actionCompleteResolver?.()
+        this.actionCompleteResolver = null
+    }
+
+    private async previewMoves(player: PlayerInterface, turn: number) {
+        const entriesPlayer = await this.inputsPlayer?.previewMoves()
+        const {piece, currentCell} = this.parseEntriesPlayer(player, entriesPlayer)
+        return await this.gameRules.fetchMoveOptions(piece!, currentCell!, turn)
+    }
+
+    private async move(player: PlayerInterface) {
+        const entriesPlayer = await this.inputsPlayer?.move()
+        const {piece, currentCell, nextCell} = this.parseEntriesPlayer(player, entriesPlayer)
+        currentCell?.setPiece()
+        nextCell?.setPiece(piece)
     }
 
     getPlayers(): PlayerInterface[] {
@@ -41,15 +60,8 @@ export class GameSession implements SessionInterface {
         return this.board
     }
 
-    status(): Promise<string[]> {
-        return new Promise((resolve) => {
-            const checkInterval = setInterval(() => {
-                if (this.isPlayerActionComplete) {
-                    clearInterval(checkInterval) 
-                    resolve(this.parseAreaPlay()) 
-                }
-            }, 10)
-        })
+    async status(): Promise<string[]> {
+        return this.actionCompletePromise.then(() => this.parseAreaPlay())
     }
 
     private parseAreaPlay() {
@@ -79,19 +91,6 @@ export class GameSession implements SessionInterface {
         }
 
         return contentCell
-    }
-
-    private async previewMoves(player: PlayerInterface, turn: number) {
-        const entriesPlayer = await this.inputsPlayer?.previewMoves()
-        const {piece, currentCell} = this.parseEntriesPlayer(player, entriesPlayer)
-        return await this.gameRules.fetchMoveOptions(piece!, currentCell!, turn)
-    }
-
-    private async move(player: PlayerInterface) {
-        const entriesPlayer = await this.inputsPlayer?.move()
-        const {piece, currentCell, nextCell} = this.parseEntriesPlayer(player, entriesPlayer)
-        currentCell?.setPiece()
-        nextCell?.setPiece(piece)
     }
 
     private parseEntriesPlayer(player: PlayerInterface, entries?: EntriesPlayer) {
