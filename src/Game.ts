@@ -18,7 +18,7 @@ export interface SessionInterface {
     start(board: BoardInterface, players: PlayerInterface[]): Promise<void>
     getPlayers(): PlayerInterface[]
     getBoard(): BoardInterface
-    status(): Array<string>
+    status(): Promise<string[]>
 }
 
 export interface DisplayInterface {

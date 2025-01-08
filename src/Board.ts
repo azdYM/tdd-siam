@@ -7,11 +7,16 @@ type ReserveArea = {
     cells: Cell[]
 }
 
+export type Area = 'Play' | 'Reserve'
+
 export interface BoardInterface {
     size(): number
+    rows(): number
+    columns(): number
     synchronize(piecesPerTeam: Array<PiecesPerTeam>): Promise<void>
     getReserveFor(team: TeamPlayer): ReserveArea|undefined
     getPlayArea(): Cell[]
+    getCellFor(id: number, area: Area, team?: TeamPlayer): Cell | null
 }
 
 export class Board implements BoardInterface {
@@ -37,6 +42,24 @@ export class Board implements BoardInterface {
 
     size() {
         return this.x * this.y
+    }
+
+    rows(): number {
+        return this.x
+    }
+
+    columns(): number
+    {
+        return this.y
+    }
+
+    getCellFor(id: number, area: Area, team?: TeamPlayer) {
+        if (area === 'Play') {
+            return this.getPlayArea().find(cell => cell.id === id) ?? null
+        }
+
+        if (!team) return null
+        return this.getReserveFor(team)?.cells.find(cell => cell.id === id) ?? null
     }
 
     private initPlayArea() {
@@ -78,7 +101,7 @@ export class Board implements BoardInterface {
             
             if (isRocketPosition) {
                 rockId++
-                const rock = new Piece(rockId, Piece.ROCK)
+                const rock = new Piece(`O${rockId}`, Piece.ROCK)
                 cell.setPiece(rock)
             }
         })

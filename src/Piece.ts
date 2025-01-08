@@ -3,7 +3,7 @@ import { TeamPlayer } from "./Player.js";
 export type PieceType = TeamPlayer | 'Rock'
 
 export class PieceFactory {
-    static create(type: PieceType, id: number): Piece {
+    static create(type: PieceType, id: string): Piece {
         return new Piece(id, type);
     }
 }
@@ -14,7 +14,7 @@ export class Piece {
     static ROCK: PieceType = 'Rock'
 
     constructor(
-        public id: number,
+        public id: string,
         public type: PieceType
     ) {}
 }

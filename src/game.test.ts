@@ -1,7 +1,7 @@
-import { startGame, Game } from "./Game.js";
+import { startGame } from "./Game.js";
 import { Board, BoardInterface } from "./Board.js";
-import { PlayerEntries, PlayerConfigInputInterface, PlayerManager } from "./PlayerManager.js";
-import { BoardInputInterface, BoardManager } from "./BoardManager.js";
+import { PlayerEntries, PlayerConfigInputInterface } from "./PlayerManager.js";
+import { BoardInputInterface } from "./BoardManager.js";
 import { Piece } from "./Piece.js";
 import { EntriesPlayer, PlayerGameInputsInterface } from "./GameSession.js";
 
@@ -77,13 +77,14 @@ test('Synchronises player pieces into their respective team reserves at game sta
 test('Syncronise rock pieces in the middle board', async () => {
     const inputBoard = new BoardInputTest(new Board(5, 5))
     const { session } = await startGame(inputBoard)
+    const status = await session.status()
 
-    expect(session.status()).toEqual([
-        'E E E E E',
-        'E E E E E',
-        'E O O O E',
-        'E E E E E',
-        'E E E E E',
+    expect(status).toEqual([
+        'EE EE EE EE EE',
+        'EE EE EE EE EE',
+        'EE O1 O2 O3 EE',
+        'EE EE EE EE EE',
+        'EE EE EE EE EE',
     ])
 });
 
@@ -91,13 +92,14 @@ test('Request possible move options during the first two turns from reserve', as
     const playersConfig = getPlayersConfig()
     const playersConfigInput = new MultiPlayerConfigInputTest(playersConfig)
     const boardConfigInput = new BoardInputTest(new Board(5, 5))
-    const playerGameInput = new PlayerGameInput([{pieceId: 1, currentCellId: 1, area: 'Reserve'}])
+    const playerGameInput = new PlayerGameInput([{
+        pieceId: "E1", 
+        currentCellId: 1,         
+        area: 'Reserve', 
+        action: 'Preview'
+    }])
 
-    const { session, rules } = await startGame(
-        boardConfigInput, 
-        playersConfigInput, 
-        playerGameInput
-    )
+    const { session, rules } = await startGame(boardConfigInput, playersConfigInput, playerGameInput)
 
     const player = session.getPlayers()[0]
     const piece = player?.getPieces()[0]
@@ -115,13 +117,14 @@ test('Request set of possible move options after the second turn from reserve', 
     const playersConfig = getPlayersConfig()
     const playersConfigInput = new MultiPlayerConfigInputTest(playersConfig)
     const boardConfigInput = new BoardInputTest(new Board(5, 5))
-    const playerGameInput = new PlayerGameInput([{pieceId: 1, currentCellId: 1, area: 'Reserve'}])
+    const playerGameInput = new PlayerGameInput([{
+        pieceId: 'E1', 
+        currentCellId: 1, 
+        area: 'Reserve', 
+        action: 'Preview'
+    }])
 
-    const { session, rules } = await startGame(
-        boardConfigInput, 
-        playersConfigInput, 
-        playerGameInput
-    )
+    const { session, rules } = await startGame(boardConfigInput, playersConfigInput, playerGameInput)
 
     const player = session.getPlayers()[0]
     const piece = player?.getPieces()[0]
@@ -134,6 +137,38 @@ test('Request set of possible move options after the second turn from reserve', 
     expect(moves?.every(cell => expectedCellsId.includes(cell.id))).toBe(true)
     expect(cell?.getPiece()).toBe(piece)
 });
+
+test('Move animal piece from reserve cell in play area empty cell', async () => {
+    const playersConfig = getPlayersConfig()
+    const playersConfigInput = new MultiPlayerConfigInputTest(playersConfig)
+    const boardConfigInput = new BoardInputTest(new Board(5, 5))
+    const playerGameInput = new PlayerGameInput([
+        {pieceId: 'E1', currentCellId: 1, area: 'Reserve', action: 'Preview'},
+        {pieceId: 'E1', currentCellId: 1, nextCellId: 2, area: 'Play', action: 'Move'},
+    ])
+
+    const { session } = await startGame(
+        boardConfigInput, 
+        playersConfigInput, 
+        playerGameInput
+    )
+
+    const status = await session.status()
+    const pieceLastCell = session.getBoard()
+        .getReserveFor('Elephant')?.cells.find(cell => cell.id === 1)
+    
+    expect(pieceLastCell?.isEmpty()).toBe(true)
+    expect(status).toEqual([
+        'EE E1 EE EE EE',
+        'EE EE EE EE EE',
+        'EE O1 O2 O3 EE',
+        'EE EE EE EE EE',
+        'EE EE EE EE EE',
+    ])
+});
+
+
+
 
 function getPlayersConfig() {
     const player: PlayerEntries = {name: "azad", team: 'Elephant'}
@@ -159,9 +194,13 @@ export class MultiPlayerConfigInputTest implements PlayerConfigInputInterface {
 }
 
 export class PlayerGameInput implements PlayerGameInputsInterface {
-    constructor(private entiries: EntriesPlayer[]) {}
+    constructor(private entries: EntriesPlayer[]) {}
 
     async previewMoves() {
-        return this.entiries.shift()
+        return this.entries.shift()
+    }
+
+    async move() {
+        return this.entries.shift()
     }
 }

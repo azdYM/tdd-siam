@@ -1,4 +1,4 @@
-import { BoardInterface } from "./Board.js"
+import { Area, BoardInterface } from "./Board.js"
 import { Cell } from "./Cell.js"
 import { SessionInterface } from "./Game.js"
 import { Piece } from "./Piece.js"
@@ -12,6 +12,7 @@ export interface GameRulesInterface {
 export class GameSession implements SessionInterface {
     private board: BoardInterface
     private players: PlayerInterface[]
+    private isPlayerActionComplete: boolean = true 
 
     constructor(
         private gameRules: GameRulesInterface, 
@@ -25,6 +26,13 @@ export class GameSession implements SessionInterface {
         await this.play(this.players[0], 1)
     }
 
+    private async play(player: PlayerInterface, turn: number): Promise<void> {
+        this.isPlayerActionComplete = false
+        const movesOptions = await this.previewMoves(player, turn)
+        await this.move(player)
+        this.isPlayerActionComplete = true
+    }
+
     getPlayers(): PlayerInterface[] {
         return this.players
     }
@@ -33,32 +41,86 @@ export class GameSession implements SessionInterface {
         return this.board
     }
 
-    status(): Array<string> {
-        return [
-            'E E E E E',
-            'E E E E E',
-            'E O O O E',
-            'E E E E E',
-            'E E E E E',
-        ]
+    status(): Promise<string[]> {
+        return new Promise((resolve) => {
+            const checkInterval = setInterval(() => {
+                if (this.isPlayerActionComplete) {
+                    clearInterval(checkInterval) 
+                    resolve(this.parseAreaPlay()) 
+                }
+            }, 10)
+        })
     }
 
-    private async play(player: PlayerInterface, turn: number): Promise<void> {
+    private parseAreaPlay() {
+        return Array.from(
+            { length: this.board.rows() }, 
+            (_, x) => this.lineOf(x + 1)
+        )
+    }
+
+    private lineOf(row: number) {
+        const parsed = Array.from(
+            { length: this.board.columns() }, 
+            (_, y) => this.contentOf(row, y + 1)
+        )
+
+        return parsed.join(' ')
+    }
+
+    private contentOf(row: number, column: number) {
+        const piece = this.board.getPlayArea().find(cell => cell.at(row, column))?.getPiece()
+        let contentCell = "EE"
+
+        if (piece?.type === 'Rock') {
+            contentCell = piece.id
+        } else if(piece?.type === 'Elephant') {
+            contentCell = piece.id
+        }
+
+        return contentCell
+    }
+
+    private async previewMoves(player: PlayerInterface, turn: number) {
         const entriesPlayer = await this.inputsPlayer?.previewMoves()
-        const piece = player?.getPieces().find(piece => piece.id === entriesPlayer?.pieceId)
-        const currentCell = this.board?.getReserveFor(player?.getTeam())?.cells!.find(cell => cell.id === entriesPlayer?.currentCellId)
-        const movesOptions = await this.gameRules.fetchMoveOptions(piece!, currentCell!, turn)
+        const {piece, currentCell} = this.parseEntriesPlayer(player, entriesPlayer)
+        return await this.gameRules.fetchMoveOptions(piece!, currentCell!, turn)
+    }
+
+    private async move(player: PlayerInterface) {
+        const entriesPlayer = await this.inputsPlayer?.move()
+        const {piece, currentCell, nextCell} = this.parseEntriesPlayer(player, entriesPlayer)
+        currentCell?.setPiece()
+        nextCell?.setPiece(piece)
+    }
+
+    private parseEntriesPlayer(player: PlayerInterface, entries?: EntriesPlayer) {
+        const piece = player?.getPieces().find(piece => piece.id === entries?.pieceId)
+        let currentCell: Cell | null = null
+        let nextCell: Cell | null = null
+
+        if (entries?.action === 'Preview') {
+            currentCell = this.board?.getCellFor(entries.currentCellId, 'Reserve', player.getTeam())
+        } else if (entries?.action === 'Move') {
+            currentCell = this.board?.getCellFor(entries.currentCellId, 'Reserve', player.getTeam())
+            nextCell = this.board?.getCellFor(entries.nextCellId!, 'Play')
+        }
+        
+        return {piece, currentCell, nextCell}
     }
 }
 
-type Area = 'Play' | 'Reserve'
+type Action = 'Preview' | 'Move'
 
 export type EntriesPlayer = {
-    pieceId: number, 
-    currentCellId: number, 
-    area: Area
+    pieceId: string, 
+    currentCellId: number
+    nextCellId?: number, 
+    area: Area,
+    action: Action
 }
 
 export interface PlayerGameInputsInterface {
-    previewMoves(): Promise<EntriesPlayer | undefined>;
+    previewMoves(): Promise<EntriesPlayer | undefined>
+    move(): Promise<EntriesPlayer | undefined>
 } 

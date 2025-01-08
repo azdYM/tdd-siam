@@ -116,9 +116,9 @@ test('The board should place three rockets in the center cells of the play area 
 });
 
 function loadPiecesPerTeam(length: number = 5) {
-    const elephantPieces = Array.from({ length }, (_, x) => PieceFactory.create(Piece.ELEPHANT, x));
-    const rhinocerosPieces = Array.from({ length }, (_, x) => PieceFactory.create(Piece.RHINOCEROS, x));
-
+    const elephantPieces = Array.from({ length }, (_, x) => PieceFactory.create(Piece.ELEPHANT, `E${x + 1}`));
+    const rhinocerosPieces = Array.from({ length }, (_, x) => PieceFactory.create(Piece.RHINOCEROS, `R${x + 1}`));
+    
     return [
         {team: Piece.ELEPHANT, pieces: elephantPieces},
         {team: Piece.RHINOCEROS, pieces: rhinocerosPieces}

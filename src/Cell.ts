@@ -32,4 +32,8 @@ export class Cell {
     isEmpty() {
         return this.piece === null
     }
+
+    at(x: number, y: number) {
+        return this.position?.x === x && this.position?.y === y
+    }
 }

@@ -42,7 +42,7 @@ export class Player implements PlayerInterface {
     private createPieces(numberOfPieces: number) {
         return Array.from(
             { length: numberOfPieces }, 
-            (_, id) => PieceFactory.create(this.team!, id)
+            (_, index) => PieceFactory.create(this.team!, `${this.team?.substring(0, 1)}${index + 1}`)
         )
     }
 }
