@@ -1,6 +1,7 @@
 import { AbstractGameSession } from "./AbstractGameSession.js"
 import { BoardInterface } from "./Board.js"
 import { Cell } from "./Cell.js"
+import { Config } from "./Game.js"
 import { Piece } from "./Piece.js"
 import { PlayerInterface } from "./Player.js"
 
@@ -10,18 +11,18 @@ export class GameSession extends AbstractGameSession {
     constructor(
         gameRules: GameRulesInterface, 
         display?: DisplayInterface,
-        private turnProcessor?: TurnProcessorInterface
+        private turnManager?: TurnManagerInterface
     ) { super(gameRules, display) }
 
-    async start(board?: BoardInterface, players: PlayerInterface[] = []): Promise<void> {
-        this.validateBoardAndPlayers(board, players)
+    async start(config: Config): Promise<void> {
+        this.validateBoardAndPlayers(config.board, config.players)
 
         await this.board?.synchronize(this.getPiecesForTeams())
         this.display?.onBoardSynchronized(this.players, this.board)
         this.initState()
 
-        this.turnProcessor?.setParams(this.board, this.gameRules, this.actionState)
-        await this.turnProcessor?.playTurn(this.players[0], 1)
+        this.turnManager?.configure(this.board, this.gameRules, this.actionState)
+        await this.turnManager?.playTurn(this.players[0], 1)
     }
 
     private initState() {
@@ -77,14 +78,14 @@ export interface DisplayInterface {
     onBoardNotProvided(): void
 }
 
+export interface TurnManagerInterface {
+    configure(board: BoardInterface, gameRules: GameRulesInterface, actionState: ActionState): void
+    playTurn(currentPlayer: PlayerInterface, turn: number): Promise<void>
+}
+
 export type ActionState = {
     completedPromise: Promise<void>
     completedResolver: (() => void) | null
-}
-
-export interface TurnProcessorInterface {
-    setParams(board: BoardInterface, gameRules: GameRulesInterface, actionState: ActionState): void
-    playTurn(currentPlayer: PlayerInterface, turn: number): Promise<void>
 }
 
 

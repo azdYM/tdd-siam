@@ -3,32 +3,32 @@ import { Board, BoardInterface } from "../Board.js";
 import { PlayerEntries, PlayerConfigInputInterface } from "../PlayerManager.js";
 import { BoardInputInterface } from "../BoardManager.js";
 import { Piece } from "../Piece.js";
-import { EntriesPlayer, PlayerGameInputsInterface } from "src/PlayerAction.js";
+import { EntriesPlayer, IPlayerTurnInputs } from "src/PlayerTurnManager.js";
 
 test('Initialize the game without a board and return Null', async () => {
-    const { session, log } = await startGame()
+    const { config, log } = await startGame()
 
     expect(log.messages[0]).toBe("Le plateau de jeu n'a pas été fourni")
-    expect(session.getBoard()).toBeUndefined()
+    expect(config.getBoard()).toBeUndefined()
 });
 
 test('Initialize a 1D board with 5 cells', async () => {
     const boardInput = new BoardInputTest(new Board(5))
-    const { session } = await startGame(boardInput)
+    const { config } = await startGame(boardInput)
     
-    expect(session.getBoard()?.size()).toBe(5) 
+    expect(config.getBoard()?.size()).toBe(5) 
 });
 
 test('Initialize a 2D board with 5x5 cells', async () => {
     const boardInput = new BoardInputTest(new Board(5, 5))
-    const { session } = await startGame(boardInput)
+    const { config } = await startGame(boardInput)
     
-    expect(session.getBoard()?.size()).toBe(25) 
+    expect(config.getBoard()?.size()).toBe(25) 
 });
 
 test('Return an empty player list when no players are Added', async () => {
-    const { session } = await startGame()
-    expect(session.getPlayers()).toEqual([]) 
+    const { config } = await startGame()
+    expect(config.getPlayers()).toEqual([]) 
 });
 
 test('Initialize the game with a single player', async () => {
@@ -36,8 +36,8 @@ test('Initialize the game with a single player', async () => {
     const inputPlayer = new MultiPlayerConfigInputTest([player])
     const inputBoard = new BoardInputTest(new Board(5, 5))
 
-    const { session } = await startGame(inputBoard, inputPlayer)
-    expect(session.getPlayers().length).toBe(1) 
+    const { config } = await startGame(inputBoard, inputPlayer)
+    expect(config.getPlayers().length).toBe(1) 
 });
 
 test('Initialize the game with multiple players', async () => {
@@ -46,8 +46,8 @@ test('Initialize the game with multiple players', async () => {
     const inputPlayers = new MultiPlayerConfigInputTest([player, player2])
     const inputBoard = new BoardInputTest(new Board(5, 5))
 
-    const { session } = await startGame(inputBoard, inputPlayers)
-    expect(session.getPlayers().length).toBe(2) 
+    const { config } = await startGame(inputBoard, inputPlayers)
+    expect(config.getPlayers().length).toBe(2) 
 });
 
 test('Synchronises player pieces into their respective team reserves at game start', async () => {
@@ -56,12 +56,11 @@ test('Synchronises player pieces into their respective team reserves at game sta
     const inputPlayers = new MultiPlayerConfigInputTest(playersConf)
     const inputBoard = new BoardInputTest(new Board(5, 5))
 
-    const { session, log } = await startGame(inputBoard, inputPlayers)
+    const { config, log } = await startGame(inputBoard, inputPlayers)
 
-    const elephantReserve = session.getBoard()?.getReserveFor('Elephant')
-    const rhinoReserve = session.getBoard()?.getReserveFor('Rhinoceros')
+    const elephantReserve = config.getBoard()?.getReserveFor('Elephant')
+    const rhinoReserve = config.getBoard()?.getReserveFor('Rhinoceros')
 
-    
     expect(elephantReserve?.cells.every(cell => cell.isEmpty())).toBe(false)
     expect(rhinoReserve?.cells.every(cell => cell.isEmpty())).toBe(false)
 
@@ -94,18 +93,18 @@ test('Request possible move options during the first two turns from reserve', as
     const playersConfig = getPlayersConfig()
     const playersConfigInput = new MultiPlayerConfigInputTest(playersConfig)
     const boardConfigInput = new BoardInputTest(new Board(5, 5))
-    const playerGameInput = new PlayerGameInput([{
+    const playerGameInput = new PlayerTurnInputs([{
         pieceId: "E1", 
         area: 'Reserve', 
         currentCellId: 1,         
         action: 'Preview'
     }])
 
-    const { session, rules } = await startGame(boardConfigInput, playersConfigInput, playerGameInput)
+    const { config, rules } = await startGame(boardConfigInput, playersConfigInput, playerGameInput)
 
-    const player = session.getPlayers()[0]
+    const player = config.getPlayers()[0]
     const piece = player?.getPieces()[0]
-    const cell = session.getBoard()?.getReserveFor(player?.getTeam())?.cells[0]!
+    const cell = config.getBoard()?.getReserveFor(player?.getTeam())?.cells[0]!
 
     const expectedCellsId = [1, 2, 4, 5, 6, 10, 11, 15, 16, 20, 21, 22, 24, 25]
     const moves = await rules.fetchMoveOptions(piece, cell, 1)
@@ -119,18 +118,18 @@ test('Request set of possible move options after the second turn from reserve', 
     const playersConfig = getPlayersConfig()
     const playersConfigInput = new MultiPlayerConfigInputTest(playersConfig)
     const boardConfigInput = new BoardInputTest(new Board(5, 5))
-    const playerGameInput = new PlayerGameInput([{
+    const playerGameInput = new PlayerTurnInputs([{
         pieceId: 'E1', 
         area: 'Reserve', 
         currentCellId: 1, 
         action: 'Preview'
     }])
 
-    const { session, rules } = await startGame(boardConfigInput, playersConfigInput, playerGameInput)
+    const { config, rules } = await startGame(boardConfigInput, playersConfigInput, playerGameInput)
 
-    const player = session.getPlayers()[0]
+    const player = config.getPlayers()[0]
     const piece = player?.getPieces()[0]
-    const cell = session.getBoard()?.getReserveFor(player?.getTeam())?.cells[0]!
+    const cell = config.getBoard()?.getReserveFor(player?.getTeam())?.cells[0]!
 
     const expectedCellsId = [1, 2, 4, 5, 6, 10, 11, 15, 16, 20, 21, 22, 24, 25, 3, 23]
     const moves = await rules.fetchMoveOptions(piece, cell, 3)
@@ -144,19 +143,19 @@ test('Move animal piece from reserve cell in play area empty cell', async () => 
     const playersConfig = getPlayersConfig()
     const playersConfigInput = new MultiPlayerConfigInputTest(playersConfig)
     const boardConfigInput = new BoardInputTest(new Board(5, 5))
-    const playerGameInput = new PlayerGameInput([
+    const playerGameInput = new PlayerTurnInputs([
         {pieceId: 'E1', area: 'Reserve', currentCellId: 1, action: 'Preview'},
         {pieceId: 'E1', area: 'Reserve', currentCellId: 1, nextCellId: 2, action: 'Move'},
     ])
 
-    const { session } = await startGame(
+    const { config, session } = await startGame(
         boardConfigInput, 
         playersConfigInput, 
         playerGameInput
     )
 
     const status = await session.status()
-    const lastPieceCell = session.getBoard()
+    const lastPieceCell = config.getBoard()!
         .getReserveFor('Elephant')?.cells.find(cell => cell.id === 1)
     
     expect(lastPieceCell?.isEmpty()).toBe(true)
@@ -192,7 +191,7 @@ export class MultiPlayerConfigInputTest implements PlayerConfigInputInterface {
     }
 }
 
-export class PlayerGameInput implements PlayerGameInputsInterface {
+export class PlayerTurnInputs implements IPlayerTurnInputs {
     constructor(private entries: EntriesPlayer[]) {}
 
     async previewMoves() {

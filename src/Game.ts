@@ -4,67 +4,40 @@ import { DisplayLog } from "./DisplayLog.js"
 import { GameRules } from "./GameRules.js"
 import { GameSession } from "./GameSession.js"
 import { PlayerInterface } from "./Player.js"
-import { PlayerAction, PlayerGameInputsInterface } from "./PlayerAction.js"
+import { IPlayerTurnInputs, PlayerTurnManager } from "./PlayerTurnManager.js"
 import { PlayerConfigInputInterface, PlayerManager } from "./PlayerManager.js"
-
-export interface IBoardManager {
-    execute(): Promise<BoardInterface | undefined>
-}
-
-export interface IPlayerManager {
-    execute(numberOfPiecesPerPlayer: number): Promise<PlayerInterface | undefined>
-}
+import { GameConfig, IBoardManager, IPlayerManager } from "./GameConfig.js"
 
 export interface SessionInterface {
-    start(board?: BoardInterface, players?: PlayerInterface[]): Promise<void>
-    getPlayers(): PlayerInterface[]
-    getBoard(): BoardInterface
+    start(config: Config): Promise<void>
     status(): Promise<string[]>
 }
 
-export class Game {
-    private NUMBER_OF_PIECES_PER_PLAYER = 7
+export interface ConfigManagerInterface {
+    initialize(): Promise<Config>
+}
 
+export type Config = {
+    board: BoardInterface | undefined,
+    players: PlayerInterface[]
+}
+
+export class Game {
     constructor(
-        private boardManager?: IBoardManager,
-        private playerManager?: IPlayerManager,
-        private session?: SessionInterface,
+        private configMangager: ConfigManagerInterface,
+        private session: SessionInterface,
     ) {}
 
     async start() {
-        const {board, players} = await this.initGame()
-        this.session?.start(board, players)
-    }
-
-    private async initGame() {
-        const board = await this.initBoard()
-        const players = await this.initPlayers()
-        return { board, players }
-    }
-
-    private async initBoard() {
-        return await this.boardManager?.execute() ?? undefined
-    }
-
-    private async initPlayers() {
-        const players: PlayerInterface[] = []
-        let player: PlayerInterface | undefined = undefined
-        
-        do {
-            player = await this.playerManager?.execute(this.NUMBER_OF_PIECES_PER_PLAYER)
-            if (player) {
-                players.push(player)
-            }
-        } while (player !== undefined)
-
-        return players
-    }
+        const config = await this.configMangager.initialize()
+        this.session.start(config)
+    }    
 }
 
 export async function startGame(
     boardInput?: BoardInputInterface, 
     playerConfigInput?: PlayerConfigInputInterface, 
-    playerGameInput?: PlayerGameInputsInterface
+    playerTurnInputs?: IPlayerTurnInputs
 ) {
     
     let playersManager: IPlayerManager | undefined
@@ -78,13 +51,20 @@ export async function startGame(
         playersManager = new PlayerManager(playerConfigInput)
     }
 
-    const log = new DisplayLog()
+    const config = new GameConfig(boardManager, playersManager)
+    const display = new DisplayLog()
     const gameRules = new GameRules
-    const playerAction = new PlayerAction(playerGameInput)
-    const session = new GameSession(gameRules, log, playerAction)
+    
+    const playerAction = new PlayerTurnManager(playerTurnInputs)
+    const session = new GameSession(gameRules, display, playerAction)
 
-    const game = new Game(boardManager, playersManager, session)
+    const game = new Game(config, session)
     await game.start()
 
-    return { session, rules: gameRules, log  }
+    return { 
+        config, 
+        session, 
+        rules: gameRules, 
+        log: display  
+    }
 }

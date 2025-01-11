@@ -1,7 +1,7 @@
 import { BoardInterface } from "./Board.js";
 import { DisplayInterface, GameRulesInterface } from "./GameSession.js";
 import { PiecesPerTeam, PlayerInterface } from "./Player.js";
-import { SessionInterface } from "./Game.js";
+import { Config, SessionInterface } from "./Game.js";
 
 export abstract class AbstractGameSession implements SessionInterface {
     protected board: BoardInterface
@@ -12,17 +12,9 @@ export abstract class AbstractGameSession implements SessionInterface {
         protected display?: DisplayInterface
     ) {}
 
-    abstract start(board?: BoardInterface, players?: PlayerInterface[]): Promise<void>;
+    abstract start(gameConfig: Config): Promise<void>;
 
     abstract status(): Promise<string[]>;
-
-    getBoard(): BoardInterface {
-        return this.board
-    }
-
-    getPlayers(): PlayerInterface[] {
-        return this.players
-    }
 
     protected getPiecesForTeams(): PiecesPerTeam[] {
         return this.players.map(player => ({

@@ -7,6 +7,8 @@ export type PlayerEntries = {
 }
 
 export class PlayerManager implements IPlayerManager {
+    private players: PlayerInterface[] = []
+
     constructor(private input: PlayerConfigInputInterface) {}
 
     async execute(numberOfPiecesPerPlayer: number): Promise<PlayerInterface | undefined> {
@@ -14,6 +16,10 @@ export class PlayerManager implements IPlayerManager {
         if (data) {
             return new Player().configure(data.name, data.team, numberOfPiecesPerPlayer)
         }
+    }
+
+    async getPlayers(): Promise<PlayerInterface[]> {
+        return this.players
     }
 }
 

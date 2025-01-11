@@ -1,4 +1,4 @@
-import { ActionState, GameRulesInterface, TurnProcessorInterface } from "./GameSession.js";
+import { ActionState, GameRulesInterface, TurnManagerInterface } from "./GameSession.js";
 import { Area, BoardInterface } from "./Board.js";
 import { Cell } from "./Cell.js";
 import { PlayerInterface } from "./Player.js";
@@ -13,19 +13,19 @@ export type EntriesPlayer = {
     action: Action
 }
 
-export interface PlayerGameInputsInterface {
+export interface IPlayerTurnInputs {
     previewMoves(): Promise<EntriesPlayer | undefined>
     move(): Promise<EntriesPlayer | undefined>
 } 
 
-export class PlayerAction implements TurnProcessorInterface {
+export class PlayerTurnManager implements TurnManagerInterface {
     private board: BoardInterface
     private gameRules: GameRulesInterface
     private actionState: ActionState
 
-    constructor(private inputsPlayer?: PlayerGameInputsInterface) {}
+    constructor(private inputsPlayer?: IPlayerTurnInputs) {}
 
-    setParams(board: BoardInterface, gameRules: GameRulesInterface, actionState: ActionState): void {
+    configure(board: BoardInterface, gameRules: GameRulesInterface, actionState: ActionState): void {
         this.board = board
         this.gameRules = gameRules
         this.actionState = actionState
