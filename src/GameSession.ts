@@ -6,7 +6,7 @@ import { PlayerInterface } from "./Player.js"
 
 export class GameSession extends AbstractGameSession {
     private actionState: ActionState
-    
+
     constructor(
         gameRules: GameRulesInterface, 
         display?: DisplayInterface,

@@ -1,8 +1,8 @@
-import { Board } from "./Board.js";
-import { BoardManager } from "./BoardManager.js";
-import { Cell } from "./Cell.js";
+import { Board } from "../Board.js";
+import { BoardManager } from "../BoardManager.js";
+import { Cell } from "../Cell.js";
 import { BoardInputTest } from "./game.test.js";
-import { Piece, PieceFactory } from "./Piece.js";
+import { Piece, PieceFactory } from "../Piece.js";
 
 test('should not create reserves for any team if no players are defined', async () => {
     const boardInput = new BoardInputTest(new Board(5, 5))

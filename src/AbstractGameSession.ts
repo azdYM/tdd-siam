@@ -1,7 +1,7 @@
 import { BoardInterface } from "./Board.js";
-import { SessionInterface } from "./Game.js";
 import { DisplayInterface, GameRulesInterface } from "./GameSession.js";
 import { PiecesPerTeam, PlayerInterface } from "./Player.js";
+import { SessionInterface } from "./Game.js";
 
 export abstract class AbstractGameSession implements SessionInterface {
     protected board: BoardInterface

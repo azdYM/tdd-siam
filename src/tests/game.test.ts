@@ -1,9 +1,9 @@
-import { startGame } from "./Game.js";
-import { Board, BoardInterface } from "./Board.js";
-import { PlayerEntries, PlayerConfigInputInterface } from "./PlayerManager.js";
-import { BoardInputInterface } from "./BoardManager.js";
-import { Piece } from "./Piece.js";
-import { EntriesPlayer, PlayerGameInputsInterface } from "./GameSession.js";
+import { startGame } from "../Game.js";
+import { Board, BoardInterface } from "../Board.js";
+import { PlayerEntries, PlayerConfigInputInterface } from "../PlayerManager.js";
+import { BoardInputInterface } from "../BoardManager.js";
+import { Piece } from "../Piece.js";
+import { EntriesPlayer, PlayerGameInputsInterface } from "src/PlayerAction.js";
 
 test('Initialize the game without a board and return Null', async () => {
     const { session, log } = await startGame()

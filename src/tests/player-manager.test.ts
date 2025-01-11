@@ -1,6 +1,6 @@
 import { MultiPlayerConfigInputTest } from "./game.test.js";
-import { Player, TeamPlayer } from "./Player.js";
-import { PlayerEntries, PlayerManager } from "./PlayerManager.js";
+import { Player, TeamPlayer } from "../Player.js";
+import { PlayerEntries, PlayerManager } from "../PlayerManager.js";
 
 test('player should have a name', async () => {
     const name = "Azad"

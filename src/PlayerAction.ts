@@ -22,7 +22,7 @@ export class PlayerAction implements TurnProcessorInterface {
     private board: BoardInterface
     private gameRules: GameRulesInterface
     private actionState: ActionState
-    
+
     constructor(private inputsPlayer?: PlayerGameInputsInterface) {}
 
     setParams(board: BoardInterface, gameRules: GameRulesInterface, actionState: ActionState): void {
