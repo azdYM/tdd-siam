@@ -6,8 +6,10 @@ import { Piece } from "./Piece.js";
 import { EntriesPlayer, PlayerGameInputsInterface } from "./GameSession.js";
 
 test('Initialize the game without a board and return Null', async () => {
-    const { session } = await startGame()
-    expect(session.getBoard()).toBeNull()
+    const { session, log } = await startGame()
+
+    expect(log.messages[0]).toBe("Le plateau de jeu n'a pas été fourni")
+    expect(session.getBoard()).toBeUndefined()
 });
 
 test('Initialize a 1D board with 5 cells', async () => {
@@ -94,8 +96,8 @@ test('Request possible move options during the first two turns from reserve', as
     const boardConfigInput = new BoardInputTest(new Board(5, 5))
     const playerGameInput = new PlayerGameInput([{
         pieceId: "E1", 
-        currentCellId: 1,         
         area: 'Reserve', 
+        currentCellId: 1,         
         action: 'Preview'
     }])
 
@@ -119,8 +121,8 @@ test('Request set of possible move options after the second turn from reserve', 
     const boardConfigInput = new BoardInputTest(new Board(5, 5))
     const playerGameInput = new PlayerGameInput([{
         pieceId: 'E1', 
-        currentCellId: 1, 
         area: 'Reserve', 
+        currentCellId: 1, 
         action: 'Preview'
     }])
 
@@ -143,8 +145,8 @@ test('Move animal piece from reserve cell in play area empty cell', async () => 
     const playersConfigInput = new MultiPlayerConfigInputTest(playersConfig)
     const boardConfigInput = new BoardInputTest(new Board(5, 5))
     const playerGameInput = new PlayerGameInput([
-        {pieceId: 'E1', currentCellId: 1, area: 'Reserve', action: 'Preview'},
-        {pieceId: 'E1', currentCellId: 1, nextCellId: 2, area: 'Play', action: 'Move'},
+        {pieceId: 'E1', area: 'Reserve', currentCellId: 1, action: 'Preview'},
+        {pieceId: 'E1', area: 'Reserve', currentCellId: 1, nextCellId: 2, action: 'Move'},
     ])
 
     const { session } = await startGame(
@@ -166,9 +168,6 @@ test('Move animal piece from reserve cell in play area empty cell', async () => 
         'EE EE EE EE EE',
     ])
 });
-
-
-
 
 function getPlayersConfig() {
     const player: PlayerEntries = {name: "azad", team: 'Elephant'}

@@ -1,67 +1,40 @@
-import { Area, BoardInterface } from "./Board.js"
+import { AbstractGameSession } from "./AbstractGameSession.js"
+import { BoardInterface } from "./Board.js"
 import { Cell } from "./Cell.js"
-import { SessionInterface } from "./Game.js"
 import { Piece } from "./Piece.js"
 import { PlayerInterface } from "./Player.js"
 
-export interface GameRulesInterface {
-    setBoard(board: BoardInterface): void
-    fetchMoveOptions(piece: Piece, cell: Cell, turn: number): Promise<Array<Cell>>
-}
-
-export class GameSession implements SessionInterface {
-    private board: BoardInterface
-    private players: PlayerInterface[]
-    private actionCompletePromise: Promise<void> = Promise.resolve()
-    private actionCompleteResolver: (() => void) | null = null
-
+export class GameSession extends AbstractGameSession {
+    private actionState: ActionState
+    
     constructor(
-        private gameRules: GameRulesInterface, 
-        private inputsPlayer?: PlayerGameInputsInterface
-    ) {}
+        gameRules: GameRulesInterface, 
+        display?: DisplayInterface,
+        private turnProcessor?: TurnProcessorInterface
+    ) { super(gameRules, display) }
 
-    async start(board: BoardInterface, players: PlayerInterface[]): Promise<void> {
-        this.board = board
-        this.gameRules.setBoard(board)
-        this.players = players
-        await this.play(this.players[0], 1)
+    async start(board?: BoardInterface, players: PlayerInterface[] = []): Promise<void> {
+        this.validateBoardAndPlayers(board, players)
+
+        await this.board?.synchronize(this.getPiecesForTeams())
+        this.display?.onBoardSynchronized(this.players, this.board)
+        this.initState()
+
+        this.turnProcessor?.setParams(this.board, this.gameRules, this.actionState)
+        await this.turnProcessor?.playTurn(this.players[0], 1)
     }
 
-    private async play(player: PlayerInterface, turn: number): Promise<void> {
-        this.actionCompletePromise = new Promise(resolve => {
-            this.actionCompleteResolver = resolve
-        })
-
-        const movesOptions = await this.previewMoves(player, turn)
-        await this.move(player)
-        
-        this.actionCompleteResolver?.()
-        this.actionCompleteResolver = null
-    }
-
-    private async previewMoves(player: PlayerInterface, turn: number) {
-        const entriesPlayer = await this.inputsPlayer?.previewMoves()
-        const {piece, currentCell} = this.parseEntriesPlayer(player, entriesPlayer)
-        return await this.gameRules.fetchMoveOptions(piece!, currentCell!, turn)
-    }
-
-    private async move(player: PlayerInterface) {
-        const entriesPlayer = await this.inputsPlayer?.move()
-        const {piece, currentCell, nextCell} = this.parseEntriesPlayer(player, entriesPlayer)
-        currentCell?.setPiece()
-        nextCell?.setPiece(piece)
-    }
-
-    getPlayers(): PlayerInterface[] {
-        return this.players
-    }
-
-    getBoard(): BoardInterface {
-        return this.board
+    private initState() {
+        this.actionState = {
+            completedPromise: Promise.resolve(),
+            completedResolver: null
+        }
     }
 
     async status(): Promise<string[]> {
-        return this.actionCompletePromise.then(() => this.parseAreaPlay())
+        return this.actionState.completedPromise.then(
+            () => this.parseAreaPlay()
+        )
     }
 
     private parseAreaPlay() {
@@ -92,34 +65,27 @@ export class GameSession implements SessionInterface {
 
         return contentCell
     }
-
-    private parseEntriesPlayer(player: PlayerInterface, entries?: EntriesPlayer) {
-        const piece = player?.getPieces().find(piece => piece.id === entries?.pieceId)
-        let currentCell: Cell | null = null
-        let nextCell: Cell | null = null
-
-        if (entries?.action === 'Preview') {
-            currentCell = this.board?.getCellFor(entries.currentCellId, 'Reserve', player.getTeam())
-        } else if (entries?.action === 'Move') {
-            currentCell = this.board?.getCellFor(entries.currentCellId, 'Reserve', player.getTeam())
-            nextCell = this.board?.getCellFor(entries.nextCellId!, 'Play')
-        }
-        
-        return {piece, currentCell, nextCell}
-    }
 }
 
-type Action = 'Preview' | 'Move'
-
-export type EntriesPlayer = {
-    pieceId: string, 
-    currentCellId: number
-    nextCellId?: number, 
-    area: Area,
-    action: Action
+export interface GameRulesInterface {
+    setBoard(board: BoardInterface): void
+    fetchMoveOptions(piece: Piece, cell: Cell, turn: number): Promise<Array<Cell>>
 }
 
-export interface PlayerGameInputsInterface {
-    previewMoves(): Promise<EntriesPlayer | undefined>
-    move(): Promise<EntriesPlayer | undefined>
-} 
+export interface DisplayInterface {
+    onBoardSynchronized(players: PlayerInterface[], board: BoardInterface): void
+    onBoardNotProvided(): void
+}
+
+export type ActionState = {
+    completedPromise: Promise<void>
+    completedResolver: (() => void) | null
+}
+
+export interface TurnProcessorInterface {
+    setParams(board: BoardInterface, gameRules: GameRulesInterface, actionState: ActionState): void
+    playTurn(currentPlayer: PlayerInterface, turn: number): Promise<void>
+}
+
+
+
